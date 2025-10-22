@@ -12,25 +12,28 @@
 
            ctx.fillStyle = "#020225"
            ctx.fillRect(0,0,300,300);
-            
-           ctx.beginPath();
-            for(let x = 0; x <= 300; x += 30) {
-                ctx.moveTo(x,0);
-                ctx.lineTo(x,300);
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 3;
-            }
-            ctx.stroke();
 
-            ctx.beginPath();
-            for(let y = 0; y <= 300; y += 30) {
-                ctx.moveTo(0,y);
-                ctx.lineTo(300,y);
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 3;
-            }
-            ctx.stroke();
+        function drawGrid(){
+                ctx.beginPath();
+                for(let x = 0; x <= 300; x += 30) {
+                    ctx.moveTo(x,0);
+                    ctx.lineTo(x,300);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 3;
+                }
+                ctx.stroke();
 
+                ctx.beginPath();
+                for(let y = 0; y <= 300; y += 30) {
+                    ctx.moveTo(0,y);
+                    ctx.lineTo(300,y);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 3;
+                }
+            ctx.stroke();
+        }
+        drawGrid();
+        
            let snake = [  {x: 150, y: 150},  {x: 145, y: 150},  {x: 140, y: 150},  {x: 135, y: 150},  {x: 130, y: 150},];
            function drawSnakePart(snakePart){
             ctx.fillStyle = 'blue'; 
@@ -39,9 +42,73 @@
            ctx.fillRect(snakePart.x,snakePart.y, 5, 5); 
            ctx.strokeRect(snakePart.x, snakePart.y,5, 5);}
            function drawSnake()  {snake.forEach(drawSnakePart);}
-           drawSnake();
+           function advanceSnake() { 
+                const head = {x: snake[0].x + dx, y:snake[0].y +dy};
+                snake.unshift(head);
+                snake.pop();
+            }
+
+            function clearCanvas() {
+                ctx.fillStyle = "#020225";
+                ctx.strokeStyle = "black";
+                ctx.fillRect(0, 0, The_Grid.width, The_Grid.height);
+                ctx.strokeRect(0, 0, The_Grid.width, The_Grid.height);
+                drawGrid();
+            }
+
+            dx = 5
+            dy = 0
+
+            function main(){setTimeout(function onTick(){
+                advanceSnake();
+
+                 if(didGameEnd()){ 
+                alert("Game Over!")
+                return;
+                }
+
+                drawSnake(); 
+                main();  
+                }, 100);
+            };
+
+            function changeDirection(event){ 
+                const LEFT_KEY = 37; 
+                const RIGHT_KEY = 39; 
+                const UP_KEY = 38; 
+                const DOWN_KEY = 40; 
+                const keyPressed = event.keyCode;
+                const goingUp = dy === -5;
+                const goingDown = dy === 5;
+                const goingRight = dx === 5;
+                const goingLeft = dx === -5;
+                if (keyPressed === UP_KEY && !goingDown){ dx = 0; dy = -5; };
+                if (keyPressed === DOWN_KEY && !goingUp){ dx = 0; dy = 5; };
+                if (keyPressed === RIGHT_KEY && !goingLeft){ dx = 5; dy = 0; };
+                if (keyPressed === LEFT_KEY && !goingRight){ dx = -5; dy = 0; };
+            }
+
+            let score = 0;
+        
+            document.addEventListener("keydown", changeDirection);
+
+            function didGameEnd(){
+                for(let i = 1; i < snake.length; i++)
+                {if (snake[i].x === snake[0].x && snake[i].y === snake[0].y)
+                    return true;    
+                }
+                const headX = snake[0].x;
+                const headY = snake[0].y;
+                const hitLeftWall = headX < 0;
+                const hitRightWall = headX > c.width -5; 
+                const hitToptWall = headY < 0;
+                const hitBottomWall = headY > c.height -5;
+                return hitLeftWall ||hitRightWall ||hitToptWall ||hitBottomWall
+            }
+            main();
 
            
     </script>
 </body>
+
 </html>
