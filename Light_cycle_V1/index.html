@@ -7,12 +7,21 @@
     <canvas id="The_Grid" width="300" height="300" style="border:3px solid #686868;">
     </canvas>
     <script>
-           var c = document.getElementById("The_Grid");
-           var ctx = c.getContext("2d"); 
+        var c = document.getElementById("The_Grid");
+        var ctx = c.getContext("2d"); 
+        
+        //initalizes the values for dx and dy
+        dx = 0
+        dy = -5
+        
+        // Creates the solid background colour
+        ctx.fillStyle = "#020225"
+        ctx.fillRect(0,0,300,300);
 
-           ctx.fillStyle = "#020225"
-           ctx.fillRect(0,0,300,300);
-
+        /*    
+        The funtion drawGrid will create the background grid for the gamespace
+        Creates evenly spaced lines creating a grid like effect
+        */
         function drawGrid(){
                 ctx.beginPath();
                 for(let x = 0; x <= 300; x += 30) {
@@ -32,66 +41,88 @@
                 }
             ctx.stroke();
         }
-        drawGrid();
+        drawGrid(); //draws the grid before anything happens
         
-           let snake = [  {x: 150, y: 150},  {x: 145, y: 150},  {x: 140, y: 150},  {x: 135, y: 150},  {x: 130, y: 150},];
-           function drawSnakePart(snakePart){
+        let snake = [  {x: 150, y: 270},  {x: 150, y: 275},  {x: 150, y: 280},  {x: 150, y: 285},  {x: 150, y: 290},]; //starting location of the players cycle
+
+         /*
+        The funtion drawSnakePart will draw one segment of the snake given the cooradinates of the part
+        @param {x-coordinate, y-coordinate}
+        */
+        function drawSnakePart(snakePart){
             ctx.fillStyle = 'blue'; 
             ctx.strokeStyle ='black';
             ctx.lineWidth = 2;
            ctx.fillRect(snakePart.x,snakePart.y, 5, 5); 
            ctx.strokeRect(snakePart.x, snakePart.y,5, 5);}
-           function drawSnake()  {snake.forEach(drawSnakePart);}
-           function advanceSnake() { 
+        
+        /*
+        calls drawSnakePart to draw out each part of the snake we preloaded above
+        */
+        function drawSnake()  {snake.forEach(drawSnakePart);}
+
+        /*
+        Advances the snake by adding a new head which moves it forward
+        */
+        function advanceSnake() { 
                 const head = {x: snake[0].x + dx, y:snake[0].y +dy};
                 snake.unshift(head);
-                snake.pop();
             }
 
-            function clearCanvas() {
-                ctx.fillStyle = "#020225";
-                ctx.strokeStyle = "black";
-                ctx.fillRect(0, 0, The_Grid.width, The_Grid.height);
-                ctx.strokeRect(0, 0, The_Grid.width, The_Grid.height);
-                drawGrid();
-            }
+        /*
+        Clears the entire canvas and redraws the entire background, grid lines, and boarder lines
+        */
+        function clearCanvas() {
+            ctx.fillStyle = "#020225";
+            ctx.strokeStyle = "black";
+            ctx.fillRect(0, 0, The_Grid.width, The_Grid.height);
+            ctx.strokeRect(0, 0, The_Grid.width, The_Grid.height);
+            drawGrid();
+        }
+        
+         /*
+        The main game loop - advances the snake, checks for collision(ends game if so), redraws the snake and continues the loop 
+        */
+        function main(){setTimeout(function onTick(){
+            advanceSnake();
 
-            dx = 5
-            dy = 0
-
-            function main(){setTimeout(function onTick(){
-                advanceSnake();
-
-                 if(didGameEnd()){ 
+            if(didGameEnd()){ 
                 alert("Game Over!")
                 return;
-                }
-
-                drawSnake(); 
-                main();  
-                }, 100);
-            };
-
-            function changeDirection(event){ 
-                const LEFT_KEY = 37; 
-                const RIGHT_KEY = 39; 
-                const UP_KEY = 38; 
-                const DOWN_KEY = 40; 
-                const keyPressed = event.keyCode;
-                const goingUp = dy === -5;
-                const goingDown = dy === 5;
-                const goingRight = dx === 5;
-                const goingLeft = dx === -5;
-                if (keyPressed === UP_KEY && !goingDown){ dx = 0; dy = -5; };
-                if (keyPressed === DOWN_KEY && !goingUp){ dx = 0; dy = 5; };
-                if (keyPressed === RIGHT_KEY && !goingLeft){ dx = 5; dy = 0; };
-                if (keyPressed === LEFT_KEY && !goingRight){ dx = -5; dy = 0; };
             }
 
-            let score = 0;
-        
-            document.addEventListener("keydown", changeDirection);
+            drawSnake(); 
+            main();  
+            }, 100);
+            };
 
+        /*
+        The funtion changeDirection takes in an input from the users arrow keys and move the snake accordingly
+        Does not allow the user to move back into themselves
+        */
+        function changeDirection(event){ 
+            const LEFT_KEY = 37; 
+            const RIGHT_KEY = 39; 
+            const UP_KEY = 38; 
+            const DOWN_KEY = 40; 
+            const keyPressed = event.keyCode;
+            const goingUp = dy === -5;
+            const goingDown = dy === 5;
+            const goingRight = dx === 5;
+            const goingLeft = dx === -5;
+            if (keyPressed === UP_KEY && !goingDown){ dx = 0; dy = -5; };
+            if (keyPressed === DOWN_KEY && !goingUp){ dx = 0; dy = 5; };
+            if (keyPressed === RIGHT_KEY && !goingLeft){ dx = 5; dy = 0; };
+            if (keyPressed === LEFT_KEY && !goingRight){ dx = -5; dy = 0; };
+            }
+
+            let score = 0; //initializes score value
+        
+            document.addEventListener("keydown", changeDirection); //allows for the funtion changeDirection to work via the key pressed by user
+
+            /*
+            Ends the game if the user hits a boarder wall or their own trail
+            */
             function didGameEnd(){
                 for(let i = 1; i < snake.length; i++)
                 {if (snake[i].x === snake[0].x && snake[i].y === snake[0].y)
@@ -112,3 +143,4 @@
 </body>
 
 </html>
+
