@@ -13,6 +13,7 @@ The game runs entirely in the browser using the HTML `<canvas>` element. Key fea
 - **Real-time input handling** for movement controls.
 - **Collision detection** for walls and self-trail.
 - A simple **game loop** built with `setTimeout` to control animation speed.
+- **Rule-based avoidant Ai** for user to battle with
 
 
 ## Tools Used
@@ -20,4 +21,5 @@ The game runs entirely in the browser using the HTML `<canvas>` element. Key fea
 - **JavaScript**
 
 ## Future Improvements
-- Add AI-controlled cycles.
+- Updated scoring system
+- Create levels to go with socring system 
