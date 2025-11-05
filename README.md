@@ -21,5 +21,6 @@ The game runs entirely in the browser using the HTML `<canvas>` element. Key fea
 - **JavaScript**
 
 ## Future Improvements
-- Updated scoring system
-- Create levels to go with socring system 
+- Updated scoring system and level progression
+- Level system with increasing Ai speed and introduces multiple Ai cycles
+- Custom cycle and trail sprites for "Tron" look 
