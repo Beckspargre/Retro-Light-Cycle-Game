@@ -65,7 +65,14 @@
                 ctx.strokeStyle ='black';
                 ctx.lineWidth = 2;
                 ctx.fillRect(snakePart.x,snakePart.y, 5, 5); 
-                ctx.strokeRect(snakePart.x, snakePart.y,5, 5);}
+                ctx.strokeRect(snakePart.x, snakePart.y,5, 5);
+           }
+        
+         function reset_user() {
+                snake = [  {x: 150, y: 270},  {x: 150, y: 275},  {x: 150, y: 280},  {x: 150, y: 285},  {x: 150, y: 290},]
+                dx = 0
+                dy = -5
+           }
 
              /*
            The funtion draw_AI_cyclePart will draw one segment of the ai cycle given the cooradinates of the part
@@ -77,6 +84,12 @@
                 ctx.lineWidth = 2;
                 ctx.fillRect(snakePart.x,snakePart.y, 5, 5); 
                 ctx.strokeRect(snakePart.x, snakePart.y,5, 5);}
+        
+          function reset_AI() {
+                Ai_cycle = [  {x: 150, y: 30},  {x: 150, y: 25},  {x: 150, y: 20},  {x: 150, y: 15},  {x: 150, y: 10},]
+                ai_dx = 0
+                ai_dy = 5
+           }
 
             /*
             calls drawSnakePart to draw out each part of the snake we preloaded above
@@ -105,6 +118,10 @@
                 ctx.fillRect(0, 0, The_Grid.width, The_Grid.height);
                 ctx.strokeRect(0, 0, The_Grid.width, The_Grid.height);
                 drawGrid();
+                reset_AI();
+                reset_user();
+                drawSnake();
+                draw_AI_cycle();
             }
 
             /*
@@ -119,14 +136,21 @@
                 advanceSnake();
 
                 if(did_Ai_collide(Ai_cycle[0].x, Ai_cycle[0].y)){
-                    score += 10; document.getElementById('score').innerHTML = score;
-                    alert("You Win!")
+                    score += 10; 
+                    document.getElementById('score').innerHTML = score;
+                    alert("You Win!");
+                    clearCanvas();
+                    main();
                 return;
                 }
 
                 if(didGameEnd()){ 
-                alert("Game Over!")
-                return;
+                    score = 0; 
+                    document.getElementById('score').innerHTML = score
+                    alert("Game Over!");
+                    clearCanvas();
+                    main();
+                    return;
                  }
 
                 
@@ -277,4 +301,5 @@
     </script>
 </body>
 </html>
+
 
