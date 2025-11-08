@@ -9,9 +9,10 @@
     </canvas>
     <script>
             //Global varibles
-
-           var c = document.getElementById("The_Grid");
-           var ctx = c.getContext("2d"); 
+            var c = document.getElementById("The_Grid");
+            var ctx = c.getContext("2d");
+            let round = 0;
+            let score = 0;
 
            //initalizes the values for dx and dy
             dx = 0
@@ -136,18 +137,21 @@
                 advanceSnake();
 
                 if(did_Ai_collide(Ai_cycle[0].x, Ai_cycle[0].y)){
-                    score += 10; 
+                    round += 1;
+                    score += 10;
+                    next_round = round + 1; 
                     document.getElementById('score').innerHTML = score;
-                    alert("You Win!");
+                    alert("You beat round "+round+" Press OK to start round "+next_round+"")
                     clearCanvas();
                     main();
-                return;
+                    return;
                 }
 
                 if(didGameEnd()){ 
-                    score = 0; 
+                    alert("Game Over! Your final score is "+score+". Press OK to restart");
+                    round = 0;
+                    score = 0;
                     document.getElementById('score').innerHTML = score
-                    alert("Game Over!");
                     clearCanvas();
                     main();
                     return;
@@ -242,9 +246,7 @@
                 const head = {x: Ai_cycle[0].x + ai_dx, y: Ai_cycle[0].y + ai_dy};
                 Ai_cycle.unshift(head);
             }
-
-            let score = 0;
-
+        
             //allows for the funtion changeDirection to work via the key pressed by user
             document.addEventListener("keydown", changeDirection);
 
@@ -301,5 +303,6 @@
     </script>
 </body>
 </html>
+
 
 
