@@ -4,23 +4,28 @@
     <title>Light Cycle V1</title>
 </head>
 <body>
+    <audio id="levelStart">
+        <source src="game_start.wav" type="audio/wav">
+    </audio>
     <div id="score">0</div>
     <canvas id="The_Grid" width="300" height="300" style="border:3px solid #686868;">
     </canvas>
     <script>
             //Global varibles
-            var c = document.getElementById("The_Grid");
-            var ctx = c.getContext("2d");
-            let round = 0;
-            let score = 0;
+
+           var c = document.getElementById("The_Grid");
+           var ctx = c.getContext("2d");
+           let score = 0;
+           let round = 1;
+           let gameState = "PLAYING" 
 
            //initalizes the values for dx and dy
             dx = 0
             dy = -5
 
             //intializes ai start movement vals
-            ai_dx = 0
-            ai_dy = 5
+            // ai_dx = 0
+            // ai_dy = 5
 
             const AI_TURN_DELAY = 0;
             let ai_turnCooldown = 0;
@@ -54,9 +59,9 @@
            }
            drawGrid(); //draws the grid before anything happens
 
-
+           let aiCycles =[];
            let snake = [  {x: 150, y: 270},  {x: 150, y: 275},  {x: 150, y: 280},  {x: 150, y: 285},  {x: 150, y: 290},]; //starting location of the players cycle
-           let Ai_cycle = [  {x: 150, y: 30},  {x: 150, y: 25},  {x: 150, y: 20},  {x: 150, y: 15},  {x: 150, y: 10},]; // starting location of Ai cycle
+        //    let Ai_cycle = [  {x: 150, y: 30},  {x: 150, y: 25},  {x: 150, y: 20},  {x: 150, y: 15},  {x: 150, y: 10},]; // starting location of Ai cycle
            /*
            The funtion drawSnakePart will draw one segment of the snake given the cooradinates of the part
            @param {x-coordinate, y-coordinate}
@@ -66,14 +71,7 @@
                 ctx.strokeStyle ='black';
                 ctx.lineWidth = 2;
                 ctx.fillRect(snakePart.x,snakePart.y, 5, 5); 
-                ctx.strokeRect(snakePart.x, snakePart.y,5, 5);
-           }
-        
-         function reset_user() {
-                snake = [  {x: 150, y: 270},  {x: 150, y: 275},  {x: 150, y: 280},  {x: 150, y: 285},  {x: 150, y: 290},]
-                dx = 0
-                dy = -5
-           }
+                ctx.strokeRect(snakePart.x, snakePart.y,5, 5);}
 
              /*
            The funtion draw_AI_cyclePart will draw one segment of the ai cycle given the cooradinates of the part
@@ -85,22 +83,54 @@
                 ctx.lineWidth = 2;
                 ctx.fillRect(snakePart.x,snakePart.y, 5, 5); 
                 ctx.strokeRect(snakePart.x, snakePart.y,5, 5);}
-        
-          function reset_AI() {
-                Ai_cycle = [  {x: 150, y: 30},  {x: 150, y: 25},  {x: 150, y: 20},  {x: 150, y: 15},  {x: 150, y: 10},]
-                ai_dx = 0
-                ai_dy = 5
-           }
 
             /*
             calls drawSnakePart to draw out each part of the snake we preloaded above
             */
            function drawSnake()  {snake.forEach(drawSnakePart);}
+
+           function reset_user() {
+                snake = [  {x: 150, y: 270},  {x: 150, y: 275},  {x: 150, y: 280},  {x: 150, y: 285},  {x: 150, y: 290},]
+                dx = 0
+                dy = -5
+           }
+
            /*
             calls drawSnakePart to draw out each part of the snake we preloaded above
             */
-           function draw_AI_cycle()  {Ai_cycle.forEach(draw_AI_cyclePart);}
-        
+           function draw_AI_cycle()  {
+                aiCycles.forEach(ai => ai.body.forEach(draw_AI_cyclePart));
+            }
+            
+           function reset_AI() {
+                aiCycles = [];
+                function makeCycle(startX){
+                    return{
+                        body:[
+                            {x: startX, y:30},
+                            {x: startX, y:25},
+                            {x: startX, y:20},
+                            {x: startX, y:15},
+                            {x: startX, y:10},
+                        ],
+                        dx: 0,
+                        dy: 5
+                    };
+                }
+                if (round >= 1 && round < 3) {
+                    aiCycles.push(makeCycle(150));          
+                } 
+                else if (round >= 3 && round < 5) {
+                    aiCycles.push(makeCycle(150));
+                    aiCycles.push(makeCycle(100));          
+                } 
+                else if (round >= 5) {
+                    aiCycles.push(makeCycle(150));
+                    aiCycles.push(makeCycle(100));
+                    aiCycles.push(makeCycle(200));          
+                }
+           }
+
             /*
             Advances the snake by adding a new head which moves it forward
             */
@@ -109,7 +139,6 @@
                 snake.unshift(head);
             }
 
-
             /*
             Clears the entire canvas and redraws the entire background, grid lines, and boarder lines
             */
@@ -117,51 +146,93 @@
                 ctx.fillStyle = "#020225";
                 ctx.strokeStyle = "black";
                 ctx.fillRect(0, 0, The_Grid.width, The_Grid.height);
-                ctx.strokeRect(0, 0, The_Grid.width, The_Grid.height);
+                ctx.strokeRect(0, 0, The_Grid.width, The_Grid.height); //reDraws background
                 drawGrid();
-                reset_AI();
+
+                reset_AI(); //resets ai and user arrays
                 reset_user();
+
                 drawSnake();
                 draw_AI_cycle();
+            }
+
+            function Countdown(seconds){
+                let sound = document.getElementById("levelStart");
+                sound.currentTime = 0;
+                sound.play();
+
+                gameState = "COUNTDOWN"
+                let startTime = Date.now()
+                let duration = seconds * 1000;
+
+                function drawCountdown(){
+                    let elapsed = Date.now() - startTime;
+                    let timeleft = duration - elapsed;
+                    let number = Math.ceil(timeleft/1000)
+                    clearCanvas();
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                    ctx.fillRect(0, 0, c.width, c.height);
+
+                    ctx.fillStyle = "white";
+                    ctx.font = "48px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(number > 0 ? number : "", c.width / 2, c.height / 2);
+
+                    if(timeleft <= 0){
+                        gameState = "PLAYING"
+                        clearCanvas();
+                        main();
+                        return
+                    }
+                    requestAnimationFrame(drawCountdown);
+                }
+                drawCountdown();
             }
 
             /*
             The main game loop - advances the snake, checks for collision(ends game if so), redraws the snake and continues the loop 
             */
             function main(){setTimeout(function onTick(){
-                aiMovement();
+                if(gameState == "PLAYING"){
+                    aiMovement();
 
-                if (ai_turnCooldown > 0) ai_turnCooldown--;
+                    if (ai_turnCooldown > 0) ai_turnCooldown--;
+                    advanceAI();
+                    advanceSnake();
+                }
+                else{
+                    return;
+                }
+                let aiDead = aiCycles.some(ai => {
+                    const head = ai.body[0];
+                    return did_Ai_collide(head.x, head.y, ai.body);
+                });
 
-                advanceAI();
-                advanceSnake();
-
-                if(did_Ai_collide(Ai_cycle[0].x, Ai_cycle[0].y)){
+                if(aiDead){
                     round += 1;
-                    score += 10;
-                    next_round = round + 1; 
+                    score += 10; 
                     document.getElementById('score').innerHTML = score;
-                    alert("You beat round "+round+" Press OK to start round "+next_round+"")
+                    alert("Round Won. Current score is "+score+". Press OK to start round "+round+"");
                     clearCanvas();
-                    main();
+                    Countdown(3);
                     return;
                 }
 
                 if(didGameEnd()){ 
                     alert("Game Over! Your final score is "+score+". Press OK to restart");
-                    round = 0;
+                    round = 1;
                     score = 0;
                     document.getElementById('score').innerHTML = score
                     clearCanvas();
+                    Countdown(3);
                     main();
                     return;
-                 }
+                }
 
-                
                 draw_AI_cycle();
-                drawSnake(); 
-                main();  
-
+                drawSnake();
+                main(); 
                 }, 65);
             };
 
@@ -186,80 +257,99 @@
                 if (keyPressed === LEFT_KEY && !goingRight){ dx = -5; dy = 0; };
             }
 
-            function aiSetDir(dx, dy, startCooldown = true) {
-                ai_dx = dx;
-                ai_dy = dy;
+             //allows for the funtion changeDirection to work via the key pressed by user
+            document.addEventListener("keydown", changeDirection);
+
+            function aiSetDir(ai, dx, dy, startCooldown = true) {
+                ai.dx = dx;
+                ai.dy = dy;
                 if (startCooldown) ai_turnCooldown = AI_TURN_DELAY;
                 }
 
             //basic Ai movement
             function aiMovement(){
-                const head = Ai_cycle[0];
-                const back = {x: head.x - ai_dx, y: head.y - ai_dy};       //AI movements(up, down, left, right)
-                const forward = {x: head.x + ai_dx, y: head.y + ai_dy};
-                const right = {x: head.x - ai_dy, y: head.y + ai_dx};
-                const left = {x: head.x + ai_dy, y: head.y - ai_dx};
+                aiCycles.forEach(ai => {
+                    const body = ai.body;
+                    const head = body[0];
+
+                    const dy = ai.dy;
+                    const dx = ai.dx;
+
+                    const back = {x: head.x - dx, y: head.y - dy};       //AI movements(up, down, left, right)
+                    const forward = {x: head.x + dx, y: head.y + dy};
+                    const right = {x: head.x - dy, y: head.y + dx};
+                    const left = {x: head.x + dy, y: head.y - dx};
                 
-                const forwardSafe = !did_Ai_collide(forward.x, forward.y);
+                    const forwardSafe = !did_Ai_collide(forward.x, forward.y);
 
-                if (ai_turnCooldown > 0) {
-                    if (forwardSafe) {
+                    if (ai_turnCooldown > 0) {
+                        if (forwardSafe) {
+                            return;
+                        } 
+                        else {
+                            const options = [];
+                            if (!did_Ai_collide(left.x, left.y))  {options.push({ dx:  dy, dy: -dx })};
+                            if (!did_Ai_collide(right.x, right.y)){options.push({ dx: -dy, dy:  dx })};
+                            if (options.length === 0 && !did_Ai_collide(back.x,back.y)){options.push({ dx: -dx, dy: -dy });}
+                            if (options.length > 0) {
+                                const choice = options[Math.floor(Math.random() * options.length)];
+                                aiSetDir(ai, choice.dx, choice.dy, true); 
+                            }
                         return;
-                    } 
-                    else {
-                        const options = [];
-                        if (!did_Ai_collide(left.x, left.y))  {options.push({ dx:  ai_dy, dy: -ai_dx })};
-                        if (!did_Ai_collide(right.x, right.y)){options.push({ dx: -ai_dy, dy:  ai_dx })};
-                        if (options.length === 0 && !did_Ai_collide(back.x,back.y)){options.push({ dx: -ai_dx, dy: -ai_dy });}
-                        if (options.length > 0) {
-                            const choice = options[Math.floor(Math.random() * options.length)];
-                            aiSetDir(choice.dx, choice.dy, true); 
                         }
-                    return;
                     }
-                }
 
-                if (Math.random() < 0.85 && !did_Ai_collide(forward.x, forward.y)){ 
-                    //checks if forward is safe and keeps ai going that way with a 15% chance of changing direction automatically 
-                }
-                else{
-                    const options = []; //ai options list
-                    if (!did_Ai_collide(left.x, left.y))  options.push({dx:  ai_dy, dy: -ai_dx}); //if a certain direction is safe to go in it will be added to the options list
-                    if (!did_Ai_collide(right.x, right.y)) options.push({dx: -ai_dy, dy:  ai_dx});
-                    if (forwardSafe) options.push({dx: ai_dx, dy: ai_dy});
+                    if (Math.random() < 0.85 && !did_Ai_collide(forward.x, forward.y)){ 
+                        //checks if forward is safe and keeps ai going that way with a 15% chance of changing direction automatically 
+                    }
+                    else{
+                        const options = []; //ai options list
+                        if (!did_Ai_collide(left.x, left.y))  options.push({dx:  dy, dy: -dx}); //if a certain direction is safe to go in it will be added to the options list
+                        if (!did_Ai_collide(right.x, right.y)) options.push({dx: -dy, dy:  dx});
+                        if (forwardSafe) options.push({dx: dx, dy: dy});
 
                     
-                    if (options.length === 0 && !did_Ai_collide(back.x, back.y)) { //turns around if there is no safe options
-                        options.push({dx: -ai_dx, dy: -ai_dy});
-                    }
+                        if (options.length === 0 && !did_Ai_collide(back.x, back.y)) { //turns around if there is no safe options
+                            options.push({dx: -dx, dy: -dy});
+                        }
 
-                    if (options.length > 0) {
-                        const choice = options[Math.floor(Math.random() * options.length)]; //if there are safe options it will randomly pick a direction
-                        const turned = (choice.dx !== ai_dx) || (choice.dy !== ai_dy)
-                        aiSetDir(choice.dx,choice.dy, turned)
+                        if (options.length > 0) {
+                            const choice = options[Math.floor(Math.random() * options.length)]; //if there are safe options it will randomly pick a direction
+                            const turned = (choice.dx !== dx) || (choice.dy !== dy)
+                            aiSetDir(ai, choice.dx, choice.dy, turned)
+                        }
                     }
-                }
+                })
+                
             }
 
             //advances the AI cycle, same logic as advance snake for the user cycle
-            function advanceAI() { 
-                const head = {x: Ai_cycle[0].x + ai_dx, y: Ai_cycle[0].y + ai_dy};
-                Ai_cycle.unshift(head);
+            function advanceAI() {
+                aiCycles.forEach(ai => {
+                    const head =ai.body[0];
+                    const newHead = {x: head.x + ai.dx, y: head.y +ai.dy};
+                    ai.body.unshift(newHead);
+                }) 
             }
-        
-            //allows for the funtion changeDirection to work via the key pressed by user
-            document.addEventListener("keydown", changeDirection);
 
             // Determine if the Ai cycle collides with players, walls, or itself
-            function did_Ai_collide(x,y){
+            function did_Ai_collide(x,y, selfBody = null, ignorePlayerHead = false){
                 for (let s = 0; s < snake.length; s++) {
+                    if (ignorePlayerHead && s === 0) continue;
+
                     if (snake[s].x === x && snake[s].y === y) 
                         return true; 
                 }
 
-                for(let i = 1; i < Ai_cycle.length; i++){   
-                    if (Ai_cycle[i].x === x && Ai_cycle[i].y === y)
-                        return true;
+                for(let a = 0; a < aiCycles.length; a++){
+                    const body = aiCycles[a].body;
+                    for (let i = 0; i < body.length; i++){
+
+                        if(body === selfBody && i === 0) continue;
+
+                        if (body[i].x === x && body[i].y === y)
+                            return true;
+                    }
                 }
 
                 const hitLeftWall = x < 0;
@@ -273,36 +363,25 @@
             Ends the game if the user hits a boarder wall or their own trail
             */
             function didGameEnd(){
-                for(let i = 1; i < snake.length; i++)
-                {if (snake[i].x === snake[0].x && snake[i].y === snake[0].y)
-                    return true;    
+                for(let i = 1; i < snake.length; i++){
+                    if (snake[i].x === snake[0].x && snake[i].y === snake[0].y)
+                        return true;    
                 }
-
-                for (let j = 0; j < Ai_cycle.length; j++) {
-                    if (Ai_cycle[j].x === snake[0].x && Ai_cycle[j].y === snake[0].y) 
-                        return true;
-                }
-
-                if(did_Ai_collide(Ai_cycle[0].x, Ai_cycle[0].y) === true){
-                    return true
-                }
-
 
                 const headX = snake[0].x;
                 const headY = snake[0].y;
-                const hitLeftWall = headX < 0;
-                const hitRightWall = headX > c.width -5; 
-                const hitToptWall = headY < 0;
-                const hitBottomWall = headY > c.height -5;
-                return hitLeftWall ||hitRightWall ||hitToptWall ||hitBottomWall
+
+                if (did_Ai_collide(headX, headY, null, true)) {
+                    return true;
+                }
+
+                return false;
             }
 
-            main();
+            clearCanvas();
+            Countdown(3);
             
 
     </script>
 </body>
 </html>
-
-
-
